@@ -1,0 +1,435 @@
+<Window x:Class="Defenestra.Views.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="clr-namespace:Defenestra.ViewModels"
+        Title="Defenestra"
+        Icon="/Assets/icon.ico"
+        Width="560" Height="620"
+        MinWidth="480" MinHeight="520"
+        WindowStartupLocation="CenterScreen"
+        Background="#1e1e2e">
+
+    <Window.DataContext>
+        <vm:MainViewModel />
+    </Window.DataContext>
+
+    <Window.Resources>
+        <!-- Dark theme colors -->
+        <SolidColorBrush x:Key="BgPrimary" Color="#1e1e2e"/>
+        <SolidColorBrush x:Key="BgSecondary" Color="#313244"/>
+        <SolidColorBrush x:Key="BgTertiary" Color="#45475a"/>
+        <SolidColorBrush x:Key="FgPrimary" Color="#cdd6f4"/>
+        <SolidColorBrush x:Key="FgSecondary" Color="#a6adc8"/>
+        <SolidColorBrush x:Key="AccentBlue" Color="#89b4fa"/>
+        <SolidColorBrush x:Key="AccentGreen" Color="#a6e3a1"/>
+        <SolidColorBrush x:Key="AccentRed" Color="#f38ba8"/>
+        <SolidColorBrush x:Key="AccentYellow" Color="#f9e2af"/>
+
+        <Style TargetType="TextBlock">
+            <Setter Property="Foreground" Value="{StaticResource FgPrimary}"/>
+            <Setter Property="FontFamily" Value="Segoe UI"/>
+        </Style>
+
+        <Style TargetType="Label">
+            <Setter Property="Foreground" Value="{StaticResource FgSecondary}"/>
+            <Setter Property="FontFamily" Value="Segoe UI"/>
+            <Setter Property="FontSize" Value="12"/>
+        </Style>
+
+        <!-- Button -->
+        <Style TargetType="Button">
+            <Setter Property="Background" Value="{StaticResource BgTertiary}"/>
+            <Setter Property="Foreground" Value="{StaticResource FgPrimary}"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Padding" Value="14,6"/>
+            <Setter Property="FontFamily" Value="Segoe UI"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border Background="{TemplateBinding Background}"
+                                CornerRadius="4"
+                                Padding="{TemplateBinding Padding}">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter Property="Background" Value="#585b70"/>
+                            </Trigger>
+                            <Trigger Property="IsEnabled" Value="False">
+                                <Setter Property="Opacity" Value="0.5"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <Style x:Key="AccentButton" TargetType="Button" BasedOn="{StaticResource {x:Type Button}}">
+            <Setter Property="Background" Value="#313298"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border Background="{TemplateBinding Background}"
+                                CornerRadius="4"
+                                Padding="{TemplateBinding Padding}">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter Property="Background" Value="#4444b8"/>
+                            </Trigger>
+                            <Trigger Property="IsEnabled" Value="False">
+                                <Setter Property="Opacity" Value="0.5"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <Style x:Key="DangerButton" TargetType="Button" BasedOn="{StaticResource {x:Type Button}}">
+            <Setter Property="Background" Value="#6e2532"/>
+        </Style>
+
+        <!-- ComboBox toggle button (the main clickable area) -->
+        <ControlTemplate x:Key="ComboBoxToggleButton" TargetType="ToggleButton">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition/>
+                    <ColumnDefinition Width="20"/>
+                </Grid.ColumnDefinitions>
+                <Border x:Name="Border" Grid.ColumnSpan="2"
+                        Background="{StaticResource BgSecondary}"
+                        BorderBrush="{StaticResource BgTertiary}"
+                        BorderThickness="1" CornerRadius="3"/>
+                <Path x:Name="Arrow" Grid.Column="1"
+                      Fill="{StaticResource FgSecondary}"
+                      HorizontalAlignment="Center" VerticalAlignment="Center"
+                      Data="M 0 0 L 4 4 L 8 0 Z"/>
+            </Grid>
+        </ControlTemplate>
+
+        <!-- ComboBox editable textbox -->
+        <ControlTemplate x:Key="ComboBoxTextBox" TargetType="TextBox">
+            <Border x:Name="PART_ContentHost" Focusable="False" Background="Transparent"/>
+        </ControlTemplate>
+
+        <!-- ComboBox full template -->
+        <Style TargetType="ComboBox">
+            <Setter Property="Foreground" Value="{StaticResource FgPrimary}"/>
+            <Setter Property="FontFamily" Value="Segoe UI"/>
+            <Setter Property="SnapsToDevicePixels" Value="True"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="ComboBox">
+                        <Grid>
+                            <ToggleButton Name="ToggleButton"
+                                          Template="{StaticResource ComboBoxToggleButton}"
+                                          Focusable="False"
+                                          IsChecked="{Binding Path=IsDropDownOpen, Mode=TwoWay, RelativeSource={RelativeSource TemplatedParent}}"
+                                          ClickMode="Press"/>
+                            <ContentPresenter Name="ContentSite"
+                                              IsHitTestVisible="False"
+                                              Content="{TemplateBinding SelectionBoxItem}"
+                                              ContentTemplate="{TemplateBinding SelectionBoxItemTemplate}"
+                                              ContentTemplateSelector="{TemplateBinding ItemTemplateSelector}"
+                                              Margin="8,4,28,4"
+                                              VerticalAlignment="Center"
+                                              HorizontalAlignment="Left">
+                                <ContentPresenter.Resources>
+                                    <Style TargetType="TextBlock">
+                                        <Setter Property="Foreground" Value="{StaticResource FgPrimary}"/>
+                                    </Style>
+                                </ContentPresenter.Resources>
+                            </ContentPresenter>
+                            <Popup Name="Popup" Placement="Bottom"
+                                   IsOpen="{TemplateBinding IsDropDownOpen}"
+                                   AllowsTransparency="True" Focusable="False"
+                                   PopupAnimation="Slide">
+                                <Grid Name="DropDown"
+                                      SnapsToDevicePixels="True"
+                                      MinWidth="{TemplateBinding ActualWidth}"
+                                      MaxHeight="{TemplateBinding MaxDropDownHeight}">
+                                    <Border x:Name="DropDownBorder"
+                                            Background="{StaticResource BgSecondary}"
+                                            BorderBrush="{StaticResource BgTertiary}"
+                                            BorderThickness="1" CornerRadius="3">
+                                        <ScrollViewer Margin="2" SnapsToDevicePixels="True">
+                                            <StackPanel IsItemsHost="True" KeyboardNavigation.DirectionalNavigation="Contained"/>
+                                        </ScrollViewer>
+                                    </Border>
+                                </Grid>
+                            </Popup>
+                        </Grid>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- ComboBoxItem -->
+        <Style TargetType="ComboBoxItem">
+            <Setter Property="Foreground" Value="{StaticResource FgPrimary}"/>
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="Padding" Value="8,4"/>
+            <Setter Property="FontFamily" Value="Segoe UI"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="ComboBoxItem">
+                        <Border Background="{TemplateBinding Background}"
+                                Padding="{TemplateBinding Padding}">
+                            <ContentPresenter>
+                                <ContentPresenter.Resources>
+                                    <Style TargetType="TextBlock">
+                                        <Setter Property="Foreground" Value="{StaticResource FgPrimary}"/>
+                                    </Style>
+                                </ContentPresenter.Resources>
+                            </ContentPresenter>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsHighlighted" Value="True">
+                                <Setter Property="Background" Value="{StaticResource BgTertiary}"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- TextBox -->
+        <Style TargetType="TextBox">
+            <Setter Property="Background" Value="{StaticResource BgSecondary}"/>
+            <Setter Property="Foreground" Value="{StaticResource FgPrimary}"/>
+            <Setter Property="BorderBrush" Value="{StaticResource BgTertiary}"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="Padding" Value="6,4"/>
+            <Setter Property="FontFamily" Value="Segoe UI"/>
+            <Setter Property="CaretBrush" Value="{StaticResource FgPrimary}"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="TextBox">
+                        <Border Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                CornerRadius="3"
+                                Padding="{TemplateBinding Padding}">
+                            <ScrollViewer x:Name="PART_ContentHost" Focusable="False"/>
+                        </Border>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- CheckBox -->
+        <Style TargetType="CheckBox">
+            <Setter Property="Foreground" Value="{StaticResource FgPrimary}"/>
+            <Setter Property="FontFamily" Value="Segoe UI"/>
+        </Style>
+
+        <!-- GroupBox -->
+        <Style TargetType="GroupBox">
+            <Setter Property="Foreground" Value="{StaticResource AccentBlue}"/>
+            <Setter Property="BorderBrush" Value="{StaticResource BgTertiary}"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="Padding" Value="8"/>
+            <Setter Property="Margin" Value="0,0,0,8"/>
+            <Setter Property="FontFamily" Value="Segoe UI"/>
+        </Style>
+
+        <!-- DataGrid -->
+        <Style TargetType="DataGrid">
+            <Setter Property="Background" Value="{StaticResource BgSecondary}"/>
+            <Setter Property="Foreground" Value="{StaticResource FgPrimary}"/>
+            <Setter Property="BorderBrush" Value="{StaticResource BgTertiary}"/>
+            <Setter Property="RowBackground" Value="{StaticResource BgSecondary}"/>
+            <Setter Property="AlternatingRowBackground" Value="#2a2a3c"/>
+            <Setter Property="GridLinesVisibility" Value="None"/>
+            <Setter Property="HeadersVisibility" Value="Column"/>
+            <Setter Property="FontFamily" Value="Segoe UI"/>
+        </Style>
+
+        <!-- DataGrid column headers -->
+        <Style TargetType="DataGridColumnHeader">
+            <Setter Property="Background" Value="{StaticResource BgTertiary}"/>
+            <Setter Property="Foreground" Value="{StaticResource FgSecondary}"/>
+            <Setter Property="Padding" Value="8,4"/>
+            <Setter Property="BorderBrush" Value="{StaticResource BgPrimary}"/>
+            <Setter Property="BorderThickness" Value="0,0,1,0"/>
+            <Setter Property="FontFamily" Value="Segoe UI"/>
+            <Setter Property="FontSize" Value="11"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+        </Style>
+
+        <!-- DataGrid cells -->
+        <Style TargetType="DataGridCell">
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="Foreground" Value="{StaticResource FgPrimary}"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Padding" Value="8,4"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="DataGridCell">
+                        <Border Background="{TemplateBinding Background}"
+                                Padding="{TemplateBinding Padding}">
+                            <ContentPresenter VerticalAlignment="Center"/>
+                        </Border>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+            <Style.Triggers>
+                <Trigger Property="IsSelected" Value="True">
+                    <Setter Property="Background" Value="{StaticResource BgTertiary}"/>
+                    <Setter Property="Foreground" Value="{StaticResource FgPrimary}"/>
+                </Trigger>
+            </Style.Triggers>
+        </Style>
+
+        <!-- DataGrid row -->
+        <Style TargetType="DataGridRow">
+            <Setter Property="Background" Value="{StaticResource BgSecondary}"/>
+            <Setter Property="Foreground" Value="{StaticResource FgPrimary}"/>
+            <Style.Triggers>
+                <Trigger Property="IsSelected" Value="True">
+                    <Setter Property="Background" Value="{StaticResource BgTertiary}"/>
+                </Trigger>
+                <Trigger Property="IsMouseOver" Value="True">
+                    <Setter Property="Background" Value="#3a3a4c"/>
+                </Trigger>
+            </Style.Triggers>
+        </Style>
+
+        <!-- ScrollBar dark theme -->
+        <Style TargetType="ScrollBar">
+            <Setter Property="Background" Value="{StaticResource BgSecondary}"/>
+        </Style>
+    </Window.Resources>
+
+    <Grid Margin="12">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <!-- Window Picker -->
+        <GroupBox Grid.Row="0" Header="Select Window">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+                <ComboBox ItemsSource="{Binding Windows}"
+                          SelectedItem="{Binding SelectedWindow}"
+                          DisplayMemberPath="DisplayName"
+                          Margin="0,0,8,0"/>
+                <Button Grid.Column="1" Content="Refresh"
+                        Command="{Binding RefreshWindowsCommand}"/>
+            </Grid>
+        </GroupBox>
+
+        <!-- Configuration -->
+        <GroupBox Grid.Row="1" Header="Configuration">
+            <StackPanel>
+                <!-- Monitor selector -->
+                <Label Content="MONITOR" FontSize="10" FontWeight="SemiBold" Padding="0" Margin="0,0,0,2"/>
+                <ComboBox ItemsSource="{Binding Monitors}"
+                          SelectedItem="{Binding SelectedMonitor}"
+                          DisplayMemberPath="DisplayName"
+                          Margin="0,0,0,10"/>
+
+                <!-- Preset -->
+                <Label Content="PRESET" FontSize="10" FontWeight="SemiBold" Padding="0" Margin="0,0,0,2"/>
+                <ComboBox ItemsSource="{Binding Presets}"
+                          SelectedItem="{Binding SelectedPreset}"
+                          DisplayMemberPath="Name"
+                          Margin="0,0,0,10"/>
+
+                <!-- Position & Size -->
+                <Grid Margin="0,0,0,10">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="8"/>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="8"/>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="8"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                    </Grid.RowDefinitions>
+
+                    <Label Grid.Column="0" Content="X" FontSize="10" FontWeight="SemiBold" Padding="0" Margin="0,0,0,2"/>
+                    <TextBox Grid.Column="0" Grid.Row="1" Text="{Binding PosX, UpdateSourceTrigger=PropertyChanged}"/>
+
+                    <Label Grid.Column="2" Content="Y" FontSize="10" FontWeight="SemiBold" Padding="0" Margin="0,0,0,2"/>
+                    <TextBox Grid.Column="2" Grid.Row="1" Text="{Binding PosY, UpdateSourceTrigger=PropertyChanged}"/>
+
+                    <Label Grid.Column="4" Content="WIDTH" FontSize="10" FontWeight="SemiBold" Padding="0" Margin="0,0,0,2"/>
+                    <TextBox Grid.Column="4" Grid.Row="1" Text="{Binding Width, UpdateSourceTrigger=PropertyChanged}"/>
+
+                    <Label Grid.Column="6" Content="HEIGHT" FontSize="10" FontWeight="SemiBold" Padding="0" Margin="0,0,0,2"/>
+                    <TextBox Grid.Column="6" Grid.Row="1" Text="{Binding Height, UpdateSourceTrigger=PropertyChanged}"/>
+                </Grid>
+
+                <!-- Options -->
+                <CheckBox Content="Remove window decorations (borders, title bar)"
+                          IsChecked="{Binding RemoveDecorations}" Margin="0,0,0,10"/>
+
+                <!-- Apply / Save buttons -->
+                <StackPanel Orientation="Horizontal">
+                    <Button Content="Apply" Command="{Binding ApplyCommand}"
+                            Style="{StaticResource AccentButton}" Margin="0,0,8,0" MinWidth="90"/>
+                    <Button Content="Save Profile" Command="{Binding SaveProfileCommand}" MinWidth="90"/>
+                </StackPanel>
+            </StackPanel>
+        </GroupBox>
+
+        <!-- Saved Profiles -->
+        <GroupBox Grid.Row="2" Header="Saved Profiles">
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="*"/>
+                    <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
+
+                <!-- Auto-apply toggle -->
+                <CheckBox Grid.Row="0" Content="Auto-apply profiles when games launch"
+                          IsChecked="{Binding AutoApplyEnabled}" Margin="0,0,0,8"/>
+
+                <!-- Profile list -->
+                <DataGrid Grid.Row="1"
+                          ItemsSource="{Binding Profiles}"
+                          SelectedItem="{Binding SelectedProfile}"
+                          AutoGenerateColumns="False"
+                          IsReadOnly="True"
+                          SelectionMode="Single"
+                          CanUserAddRows="False"
+                          Margin="0,0,0,8">
+                    <DataGrid.Columns>
+                        <DataGridTextColumn Header="Name" Binding="{Binding Name}" Width="*"/>
+                        <DataGridTextColumn Header="Exe" Binding="{Binding ExeName}" Width="100"/>
+                        <DataGridTextColumn Header="Layout" Binding="{Binding Summary}" Width="*"/>
+                    </DataGrid.Columns>
+                </DataGrid>
+
+                <!-- Profile actions -->
+                <StackPanel Grid.Row="2" Orientation="Horizontal">
+                    <Button Content="Load" Command="{Binding LoadProfileCommand}" Margin="0,0,8,0"/>
+                    <Button Content="Delete" Command="{Binding DeleteProfileCommand}"
+                            Style="{StaticResource DangerButton}"/>
+                </StackPanel>
+            </Grid>
+        </GroupBox>
+
+        <!-- Status bar -->
+        <Border Grid.Row="3" Background="{StaticResource BgSecondary}"
+                CornerRadius="4" Padding="10,6" Margin="0,4,0,0">
+            <TextBlock Text="{Binding StatusMessage}" FontSize="11"
+                       Foreground="{StaticResource FgSecondary}"/>
+        </Border>
+    </Grid>
+</Window>
