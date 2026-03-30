@@ -62,7 +62,11 @@ public partial class App : Application
         _trayIcon.ContextMenu = contextMenu;
         _trayIcon.TrayMouseDoubleClick += (_, _) => ShowMainWindow();
 
-        _mainWindow.Show();
+        bool startMinimized = e.Args.Length > 0
+            && string.Equals(e.Args[0], "--minimized", StringComparison.OrdinalIgnoreCase);
+
+        if (!startMinimized)
+            _mainWindow.Show();
     }
 
     private static bool IsStartupEnabled()
@@ -82,7 +86,7 @@ public partial class App : Application
             if (!string.IsNullOrEmpty(exePath))
             {
                 using var key = Registry.CurrentUser.OpenSubKey(RegistryRunKey, true);
-                key?.SetValue(AppName, $"\"{exePath}\"");
+                key?.SetValue(AppName, $"\"{exePath}\" --minimized");
             }
         }
         else
