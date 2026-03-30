@@ -1,7 +1,9 @@
 using System;
 using System.IO;
 using System.Windows;
+using System.Windows.Controls;
 using Hardcodet.Wpf.TaskbarNotification;
+using Microsoft.Win32;
 using Defenestra.Views;
 
 namespace Defenestra;
@@ -10,6 +12,10 @@ public partial class App : Application
 {
     private TaskbarIcon? _trayIcon;
     private MainWindow? _mainWindow;
+    private MenuItem? _startupItem;
+
+    private const string AppName = "Defenestra";
+    private const string RegistryRunKey = @"SOFTWARE\Microsoft\Windows\CurrentVersion\Run";
 
     protected override void OnStartup(StartupEventArgs e)
     {
@@ -30,15 +36,26 @@ public partial class App : Application
             ToolTipText = "Defenestra"
         };
 
-        var contextMenu = new System.Windows.Controls.ContextMenu();
+        var contextMenu = new ContextMenu();
 
-        var showItem = new System.Windows.Controls.MenuItem { Header = "Show" };
+        var showItem = new MenuItem { Header = "Show" };
         showItem.Click += (_, _) => ShowMainWindow();
         contextMenu.Items.Add(showItem);
 
-        contextMenu.Items.Add(new System.Windows.Controls.Separator());
+        contextMenu.Items.Add(new Separator());
 
-        var exitItem = new System.Windows.Controls.MenuItem { Header = "Exit" };
+        _startupItem = new MenuItem
+        {
+            Header = "Start with Windows",
+            IsCheckable = true,
+            IsChecked = IsStartupEnabled()
+        };
+        _startupItem.Click += (_, _) => ToggleStartup();
+        contextMenu.Items.Add(_startupItem);
+
+        contextMenu.Items.Add(new Separator());
+
+        var exitItem = new MenuItem { Header = "Exit" };
         exitItem.Click += (_, _) => ExitApp();
         contextMenu.Items.Add(exitItem);
 
@@ -46,6 +63,34 @@ public partial class App : Application
         _trayIcon.TrayMouseDoubleClick += (_, _) => ShowMainWindow();
 
         _mainWindow.Show();
+    }
+
+    private static bool IsStartupEnabled()
+    {
+        using var key = Registry.CurrentUser.OpenSubKey(RegistryRunKey, false);
+        return key?.GetValue(AppName) != null;
+    }
+
+    private void ToggleStartup()
+    {
+        if (_startupItem == null) return;
+
+        if (_startupItem.IsChecked)
+        {
+            // Add to startup - use the exe path
+            string exePath = Environment.ProcessPath ?? "";
+            if (!string.IsNullOrEmpty(exePath))
+            {
+                using var key = Registry.CurrentUser.OpenSubKey(RegistryRunKey, true);
+                key?.SetValue(AppName, $"\"{exePath}\"");
+            }
+        }
+        else
+        {
+            // Remove from startup
+            using var key = Registry.CurrentUser.OpenSubKey(RegistryRunKey, true);
+            key?.DeleteValue(AppName, false);
+        }
     }
 
     private void ShowMainWindow()
