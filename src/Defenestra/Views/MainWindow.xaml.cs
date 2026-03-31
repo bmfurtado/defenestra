@@ -1,4 +1,5 @@
 using System.Windows;
+using Defenestra.ViewModels;
 
 namespace Defenestra.Views;
 
@@ -14,5 +15,11 @@ public partial class MainWindow : Window
         // Minimize to tray instead of closing
         e.Cancel = true;
         Hide();
+    }
+
+    private void WindowComboBox_DropDownOpened(object? sender, System.EventArgs e)
+    {
+        if (DataContext is MainViewModel vm)
+            vm.RefreshWindows();
     }
 }

@@ -314,18 +314,10 @@
 
         <!-- Window Picker -->
         <GroupBox Grid.Row="0" Header="Select Window">
-            <Grid>
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="*"/>
-                    <ColumnDefinition Width="Auto"/>
-                </Grid.ColumnDefinitions>
-                <ComboBox ItemsSource="{Binding Windows}"
-                          SelectedItem="{Binding SelectedWindow}"
-                          DisplayMemberPath="DisplayName"
-                          Margin="0,0,8,0"/>
-                <Button Grid.Column="1" Content="Refresh"
-                        Command="{Binding RefreshWindowsCommand}"/>
-            </Grid>
+            <ComboBox ItemsSource="{Binding Windows}"
+                      SelectedItem="{Binding SelectedWindow}"
+                      DisplayMemberPath="DisplayName"
+                      DropDownOpened="WindowComboBox_DropDownOpened"/>
         </GroupBox>
 
         <!-- Configuration -->
