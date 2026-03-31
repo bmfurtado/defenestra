@@ -6,29 +6,60 @@ using Defenestra.Models;
 
 namespace Defenestra.Services;
 
+public class AppData
+{
+    public bool AutoApplyEnabled { get; set; }
+    public List<GameProfile> Profiles { get; set; } = new();
+}
+
 public class ProfileStore
 {
-    private static readonly string ProfilePath = Path.Combine(
-        AppDomain.CurrentDomain.BaseDirectory, "profiles.json");
+    private static readonly string DataDir = Path.Combine(
+        Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "Defenestra");
+
+    private static readonly string DataPath = Path.Combine(DataDir, "config.json");
 
     private static readonly JsonSerializerOptions JsonOptions = new()
     {
         WriteIndented = true
     };
 
-    public List<GameProfile> Load()
-    {
-        if (!File.Exists(ProfilePath))
-            return new List<GameProfile>();
+    private AppData _data = new();
 
-        string json = File.ReadAllText(ProfilePath);
-        return JsonSerializer.Deserialize<List<GameProfile>>(json, JsonOptions)
-               ?? new List<GameProfile>();
+    public ProfileStore()
+    {
+        Directory.CreateDirectory(DataDir);
+        Load();
     }
 
-    public void Save(List<GameProfile> profiles)
+    private void Load()
     {
-        string json = JsonSerializer.Serialize(profiles, JsonOptions);
-        File.WriteAllText(ProfilePath, json);
+        if (!File.Exists(DataPath))
+            return;
+
+        string json = File.ReadAllText(DataPath);
+        _data = JsonSerializer.Deserialize<AppData>(json, JsonOptions) ?? new AppData();
+    }
+
+    private void Save()
+    {
+        string json = JsonSerializer.Serialize(_data, JsonOptions);
+        File.WriteAllText(DataPath, json);
+    }
+
+    public List<GameProfile> GetProfiles() => _data.Profiles;
+
+    public void SaveProfiles(List<GameProfile> profiles)
+    {
+        _data.Profiles = profiles;
+        Save();
+    }
+
+    public bool GetAutoApplyEnabled() => _data.AutoApplyEnabled;
+
+    public void SetAutoApplyEnabled(bool enabled)
+    {
+        _data.AutoApplyEnabled = enabled;
+        Save();
     }
 }

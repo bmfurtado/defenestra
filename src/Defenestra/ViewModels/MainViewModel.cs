@@ -108,6 +108,7 @@ public class MainViewModel : INotifyPropertyChanged
         {
             _autoApplyEnabled = value;
             _processWatcher.Enabled = value;
+            _profileStore.SetAutoApplyEnabled(value);
             OnPropertyChanged();
         }
     }
@@ -138,6 +139,7 @@ public class MainViewModel : INotifyPropertyChanged
 
         LoadMonitors();
         LoadProfiles();
+        LoadSettings();
         RefreshWindows();
     }
 
@@ -166,10 +168,15 @@ public class MainViewModel : INotifyPropertyChanged
     private void LoadProfiles()
     {
         Profiles.Clear();
-        foreach (var profile in _profileStore.Load())
+        foreach (var profile in _profileStore.GetProfiles())
             Profiles.Add(profile);
 
         _processWatcher.UpdateProfiles(Profiles.ToList());
+    }
+
+    private void LoadSettings()
+    {
+        AutoApplyEnabled = _profileStore.GetAutoApplyEnabled();
     }
 
     public void RefreshWindows()
@@ -236,7 +243,7 @@ public class MainViewModel : INotifyPropertyChanged
             StatusMessage = $"Saved profile: {profile.Name}";
         }
 
-        _profileStore.Save(Profiles.ToList());
+        _profileStore.SaveProfiles(Profiles.ToList());
         _processWatcher.UpdateProfiles(Profiles.ToList());
     }
 
@@ -246,7 +253,7 @@ public class MainViewModel : INotifyPropertyChanged
 
         string name = SelectedProfile.Name;
         Profiles.Remove(SelectedProfile);
-        _profileStore.Save(Profiles.ToList());
+        _profileStore.SaveProfiles(Profiles.ToList());
         _processWatcher.UpdateProfiles(Profiles.ToList());
         StatusMessage = $"Deleted profile: {name}";
     }
