@@ -192,12 +192,6 @@ public static class WindowManager
         }
     }
 
-    // Synchronous overload for ProcessWatcher
-    public static void ApplySettings(IntPtr hWnd, int x, int y, int width, int height, bool removeDecorations)
-    {
-        ApplySettingsAsync(hWnd, x, y, width, height, removeDecorations).GetAwaiter().GetResult();
-    }
-
     public static IntPtr? FindWindowByProcessName(string processName)
     {
         IntPtr? found = null;

@@ -9,7 +9,7 @@ namespace Defenestra.Services;
 public class ProcessWatcher
 {
     private readonly DispatcherTimer _timer;
-    private readonly HashSet<IntPtr> _appliedHandles = new();
+    private readonly Dictionary<string, IntPtr> _appliedWindows = new(StringComparer.OrdinalIgnoreCase);
     private List<GameProfile> _profiles = new();
     private bool _enabled;
 
@@ -42,7 +42,7 @@ public class ProcessWatcher
         _profiles = profiles.Where(p => p.AutoApply).ToList();
     }
 
-    private void OnTick(object? sender, EventArgs e)
+    private async void OnTick(object? sender, EventArgs e)
     {
         foreach (var profile in _profiles)
         {
@@ -50,25 +50,27 @@ public class ProcessWatcher
                 continue;
 
             var hWnd = WindowManager.FindWindowByProcessName(profile.ExeName);
-            if (hWnd == null || _appliedHandles.Contains(hWnd.Value))
+            if (hWnd == null)
+            {
+                // Process gone — clear so we re-apply if it comes back
+                _appliedWindows.Remove(profile.ExeName);
+                continue;
+            }
+
+            // Only apply if we haven't applied to this exact handle before
+            if (_appliedWindows.TryGetValue(profile.ExeName, out var lastHandle) && lastHandle == hWnd.Value)
                 continue;
 
-            WindowManager.ApplySettings(hWnd.Value, profile.X, profile.Y,
+            await WindowManager.ApplySettingsAsync(hWnd.Value, profile.X, profile.Y,
                 profile.Width, profile.Height, profile.RemoveDecorations);
 
-            _appliedHandles.Add(hWnd.Value);
+            _appliedWindows[profile.ExeName] = hWnd.Value;
             ProfileApplied?.Invoke(profile.Name);
         }
-
-        // Clean up stale handles
-        _appliedHandles.RemoveWhere(h =>
-            WindowManager.FindWindowByProcessName(
-                _profiles.FirstOrDefault(p =>
-                    WindowManager.FindWindowByProcessName(p.ExeName) == h)?.ExeName ?? "") == null);
     }
 
     public void ClearAppliedCache()
     {
-        _appliedHandles.Clear();
+        _appliedWindows.Clear();
     }
 }
