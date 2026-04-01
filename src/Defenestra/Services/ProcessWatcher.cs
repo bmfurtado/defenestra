@@ -44,6 +44,8 @@ public class ProcessWatcher
 
     private async void OnTick(object? sender, EventArgs e)
     {
+        var monitors = MonitorService.GetAllMonitors();
+
         foreach (var profile in _profiles)
         {
             if (string.IsNullOrEmpty(profile.ExeName))
@@ -61,7 +63,19 @@ public class ProcessWatcher
             if (_appliedWindows.TryGetValue(profile.ExeName, out var lastHandle) && lastHandle == hWnd.Value)
                 continue;
 
-            await WindowManager.ApplySettingsAsync(hWnd.Value, profile.X, profile.Y,
+            // Resolve alignment to absolute coordinates
+            var monitor = monitors.FirstOrDefault(m => m.DeviceName == profile.MonitorDeviceName)
+                ?? monitors.FirstOrDefault(m => m.IsPrimary)
+                ?? monitors.FirstOrDefault();
+
+            if (monitor == null)
+                continue;
+
+            var (x, y) = AlignmentCalculator.ComputeAbsolutePosition(
+                profile.Alignment, profile.OffsetX, profile.OffsetY,
+                profile.Width, profile.Height, monitor);
+
+            await WindowManager.ApplySettingsAsync(hWnd.Value, x, y,
                 profile.Width, profile.Height, profile.RemoveDecorations);
 
             _appliedWindows[profile.ExeName] = hWnd.Value;

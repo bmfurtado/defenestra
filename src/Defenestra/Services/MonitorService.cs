@@ -65,8 +65,6 @@ public static class MonitorService
     {
         int monW = monitor.Width;
         int monH = monitor.Height;
-        int monLeft = monitor.Left;
-        int monTop = monitor.Top;
 
         var presets = new List<MonitorPreset>();
 
@@ -77,8 +75,7 @@ public static class MonitorService
             presets.Add(new MonitorPreset
             {
                 Name = $"Center 16:9 ({w16x9}x{monH})",
-                X = monLeft + (monW - w16x9) / 2,
-                Y = monTop,
+                Alignment = Alignment.Center,
                 Width = w16x9,
                 Height = monH
             });
@@ -91,8 +88,7 @@ public static class MonitorService
             presets.Add(new MonitorPreset
             {
                 Name = $"Center 21:9 ({w21x9}x{monH})",
-                X = monLeft + (monW - w21x9) / 2,
-                Y = monTop,
+                Alignment = Alignment.Center,
                 Width = w21x9,
                 Height = monH
             });
@@ -103,24 +99,21 @@ public static class MonitorService
         presets.Add(new MonitorPreset
         {
             Name = $"Left Third ({third}x{monH})",
-            X = monLeft,
-            Y = monTop,
+            Alignment = Alignment.CenterLeft,
             Width = third,
             Height = monH
         });
         presets.Add(new MonitorPreset
         {
             Name = $"Center Third ({third}x{monH})",
-            X = monLeft + third,
-            Y = monTop,
+            Alignment = Alignment.Center,
             Width = third,
             Height = monH
         });
         presets.Add(new MonitorPreset
         {
             Name = $"Right Third ({third}x{monH})",
-            X = monLeft + third * 2,
-            Y = monTop,
+            Alignment = Alignment.CenterRight,
             Width = third,
             Height = monH
         });
@@ -129,8 +122,7 @@ public static class MonitorService
         presets.Add(new MonitorPreset
         {
             Name = $"Fullscreen ({monW}x{monH})",
-            X = monLeft,
-            Y = monTop,
+            Alignment = Alignment.Center,
             Width = monW,
             Height = monH
         });

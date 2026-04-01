@@ -3,8 +3,9 @@ namespace Defenestra.Models;
 public class MonitorPreset
 {
     public string Name { get; set; } = string.Empty;
-    public int X { get; set; }
-    public int Y { get; set; }
+    public Alignment Alignment { get; set; } = Alignment.Center;
+    public int OffsetX { get; set; }
+    public int OffsetY { get; set; }
     public int Width { get; set; }
     public int Height { get; set; }
 

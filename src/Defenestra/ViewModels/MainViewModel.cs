@@ -14,17 +14,21 @@ public class MainViewModel : INotifyPropertyChanged
 {
     private readonly ProfileStore _profileStore = new();
     private readonly ProcessWatcher _processWatcher = new();
+    private bool _populatingFromPreset;
+    private bool _populatingFromProfile;
 
     public ObservableCollection<WindowInfo> Windows { get; } = new();
     public ObservableCollection<MonitorInfo> Monitors { get; } = new();
     public ObservableCollection<MonitorPreset> Presets { get; } = new();
     public ObservableCollection<GameProfile> Profiles { get; } = new();
 
+    public Alignment[] AlignmentOptions { get; } = Enum.GetValues<Alignment>();
+
     private WindowInfo? _selectedWindow;
     public WindowInfo? SelectedWindow
     {
         get => _selectedWindow;
-        set { _selectedWindow = value; OnPropertyChanged(); }
+        set { _selectedWindow = value; OnPropertyChanged(); ClearProfileIfManual(); }
     }
 
     private MonitorInfo? _selectedMonitor;
@@ -50,10 +54,13 @@ public class MainViewModel : INotifyPropertyChanged
             OnPropertyChanged();
             if (value != null)
             {
-                PosX = value.X;
-                PosY = value.Y;
+                _populatingFromPreset = true;
+                SelectedAlignment = value.Alignment;
+                OffsetX = value.OffsetX;
+                OffsetY = value.OffsetY;
                 Width = value.Width;
                 Height = value.Height;
+                _populatingFromPreset = false;
             }
         }
     }
@@ -62,35 +69,61 @@ public class MainViewModel : INotifyPropertyChanged
     public GameProfile? SelectedProfile
     {
         get => _selectedProfile;
-        set { _selectedProfile = value; OnPropertyChanged(); }
+        set { _selectedProfile = value; OnPropertyChanged(); LoadProfile(); }
     }
 
-    private int _posX;
-    public int PosX
+    private Alignment _selectedAlignment = Alignment.Center;
+    public Alignment SelectedAlignment
     {
-        get => _posX;
-        set { _posX = value; OnPropertyChanged(); }
+        get => _selectedAlignment;
+        set { _selectedAlignment = value; OnPropertyChanged(); ClearPresetIfManual(); }
     }
 
-    private int _posY;
-    public int PosY
+    private int _offsetX;
+    public int OffsetX
     {
-        get => _posY;
-        set { _posY = value; OnPropertyChanged(); }
+        get => _offsetX;
+        set { _offsetX = value; OnPropertyChanged(); ClearPresetIfManual(); }
+    }
+
+    private int _offsetY;
+    public int OffsetY
+    {
+        get => _offsetY;
+        set { _offsetY = value; OnPropertyChanged(); ClearPresetIfManual(); }
     }
 
     private int _width = 2560;
     public int Width
     {
         get => _width;
-        set { _width = value; OnPropertyChanged(); }
+        set { _width = value; OnPropertyChanged(); ClearPresetIfManual(); }
     }
 
     private int _height = 1440;
     public int Height
     {
         get => _height;
-        set { _height = value; OnPropertyChanged(); }
+        set { _height = value; OnPropertyChanged(); ClearPresetIfManual(); }
+    }
+
+    private void ClearPresetIfManual()
+    {
+        if (!_populatingFromPreset && _selectedPreset != null)
+        {
+            _selectedPreset = null;
+            OnPropertyChanged(nameof(SelectedPreset));
+        }
+        ClearProfileIfManual();
+    }
+
+    private void ClearProfileIfManual()
+    {
+        if (!_populatingFromProfile && _selectedProfile != null)
+        {
+            _selectedProfile = null;
+            OnPropertyChanged(nameof(SelectedProfile));
+        }
     }
 
     private bool _removeDecorations = true;
@@ -193,11 +226,14 @@ public class MainViewModel : INotifyPropertyChanged
 
     private async void ApplySettings()
     {
-        if (SelectedWindow == null) return;
+        if (SelectedWindow == null || SelectedMonitor == null) return;
 
         try
         {
-            await WindowManager.ApplySettingsAsync(SelectedWindow.Handle, PosX, PosY, Width, Height, RemoveDecorations);
+            var (x, y) = AlignmentCalculator.ComputeAbsolutePosition(
+                SelectedAlignment, OffsetX, OffsetY, Width, Height, SelectedMonitor);
+
+            await WindowManager.ApplySettingsAsync(SelectedWindow.Handle, x, y, Width, Height, RemoveDecorations);
             StatusMessage = $"Applied to: {SelectedWindow.Title}";
         }
         catch (Exception ex)
@@ -218,8 +254,9 @@ public class MainViewModel : INotifyPropertyChanged
 
         if (existing != null)
         {
-            existing.X = PosX;
-            existing.Y = PosY;
+            existing.Alignment = SelectedAlignment;
+            existing.OffsetX = OffsetX;
+            existing.OffsetY = OffsetY;
             existing.Width = Width;
             existing.Height = Height;
             existing.RemoveDecorations = RemoveDecorations;
@@ -232,8 +269,9 @@ public class MainViewModel : INotifyPropertyChanged
             {
                 Name = SelectedWindow.ProcessName,
                 ExeName = SelectedWindow.ProcessName,
-                X = PosX,
-                Y = PosY,
+                Alignment = SelectedAlignment,
+                OffsetX = OffsetX,
+                OffsetY = OffsetY,
                 Width = Width,
                 Height = Height,
                 RemoveDecorations = RemoveDecorations,
@@ -262,8 +300,10 @@ public class MainViewModel : INotifyPropertyChanged
     {
         if (SelectedProfile == null) return;
 
-        PosX = SelectedProfile.X;
-        PosY = SelectedProfile.Y;
+        _populatingFromProfile = true;
+        SelectedAlignment = SelectedProfile.Alignment;
+        OffsetX = SelectedProfile.OffsetX;
+        OffsetY = SelectedProfile.OffsetY;
         Width = SelectedProfile.Width;
         Height = SelectedProfile.Height;
         RemoveDecorations = SelectedProfile.RemoveDecorations;
@@ -277,6 +317,7 @@ public class MainViewModel : INotifyPropertyChanged
                 SelectedMonitor = monitor;
         }
 
+        _populatingFromProfile = false;
         StatusMessage = $"Loaded profile: {SelectedProfile.Name}";
     }
 

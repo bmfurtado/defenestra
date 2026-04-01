@@ -337,7 +337,13 @@
                           DisplayMemberPath="Name"
                           Margin="0,0,0,10"/>
 
-                <!-- Position & Size -->
+                <!-- Alignment -->
+                <Label Content="ALIGNMENT" FontSize="10" FontWeight="SemiBold" Padding="0" Margin="0,0,0,2"/>
+                <ComboBox ItemsSource="{Binding AlignmentOptions}"
+                          SelectedItem="{Binding SelectedAlignment}"
+                          Margin="0,0,0,10"/>
+
+                <!-- Offset & Size -->
                 <Grid Margin="0,0,0,10">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="*"/>
@@ -353,11 +359,11 @@
                         <RowDefinition Height="Auto"/>
                     </Grid.RowDefinitions>
 
-                    <Label Grid.Column="0" Content="X" FontSize="10" FontWeight="SemiBold" Padding="0" Margin="0,0,0,2"/>
-                    <TextBox Grid.Column="0" Grid.Row="1" Text="{Binding PosX, UpdateSourceTrigger=PropertyChanged}"/>
+                    <Label Grid.Column="0" Content="OFFSET X" FontSize="10" FontWeight="SemiBold" Padding="0" Margin="0,0,0,2"/>
+                    <TextBox Grid.Column="0" Grid.Row="1" Text="{Binding OffsetX, UpdateSourceTrigger=PropertyChanged}"/>
 
-                    <Label Grid.Column="2" Content="Y" FontSize="10" FontWeight="SemiBold" Padding="0" Margin="0,0,0,2"/>
-                    <TextBox Grid.Column="2" Grid.Row="1" Text="{Binding PosY, UpdateSourceTrigger=PropertyChanged}"/>
+                    <Label Grid.Column="2" Content="OFFSET Y" FontSize="10" FontWeight="SemiBold" Padding="0" Margin="0,0,0,2"/>
+                    <TextBox Grid.Column="2" Grid.Row="1" Text="{Binding OffsetY, UpdateSourceTrigger=PropertyChanged}"/>
 
                     <Label Grid.Column="4" Content="WIDTH" FontSize="10" FontWeight="SemiBold" Padding="0" Margin="0,0,0,2"/>
                     <TextBox Grid.Column="4" Grid.Row="1" Text="{Binding Width, UpdateSourceTrigger=PropertyChanged}"/>
